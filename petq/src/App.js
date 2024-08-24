@@ -1,14 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './MainPage.css';
+import './MainPage.css'; // Make sure this CSS file includes all styles mentioned below
+import defaultProfilePic from './assets/defaultProfilePic.png'; // Path to your default profile image
+
 
 function App() {
   const [chatMessages, setChatMessages] = useState([]);
-  const [userInput, setUserInput] = useState('Hello! How can I help you?');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userInput, setUserInput] = useState('');
+  // defalt true
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatStarted, setChatStarted] = useState(false);
   const [petName, setPetName] = useState('');
   const [petAge, setPetAge] = useState('');
+  const [chatTitle, setChatTitle] = useState('Pet Chat'); // Default chat title
+  const [profileImage, setProfileImage] = useState(defaultProfilePic); // Default profile image
   const chatWindowRef = useRef(null);
+
 
   const sendMessage = () => {
     if (userInput.trim() === '') return;
@@ -43,14 +49,23 @@ function App() {
       alert("Please enter your pet's name and age.");
       return;
     }
-    setChatStarted(true);
+
+    if (isNaN(petAge) || petAge <= 0) {
+      alert('Please enter a valid age for your pet.');
+      return;
+    }
+
+    setChatTitle(`Chat about ${petName}`);
     setUserInput(`Hello! My pet's name is ${petName} and they are ${petAge} years old.`);
+    setChatStarted(true);
   };
+
 
   return (
     <div className="app-container">
       {!chatStarted ? (
         <div className="start-page">
+          <h2>Welcome to Pet Chat!</h2>
           <div className="input-field">
             <label>Pet Name:</label>
             <input
@@ -63,10 +78,11 @@ function App() {
           <div className="input-field">
             <label>Pet Age:</label>
             <input
-              type="text"
+              type="number"
               placeholder="Enter your pet's age"
               value={petAge}
               onChange={(e) => setPetAge(e.target.value)}
+              min="1"
             />
           </div>
           <button className="start-chat-button" onClick={startChat}>
@@ -74,14 +90,14 @@ function App() {
           </button>
         </div>
       ) : (
-        <>
+        <div className="chat-layout">
           {/* Sidebar */}
           <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-header">Menu</div>
             <ul className="sidebar-menu">
-              <li>Item 1</li>
-              <li>Item 2</li>
-              <li>Item 3</li>
+              <li>Home</li>
+              <li>Profile</li>
+              <li>Settings</li>
             </ul>
           </div>
 
@@ -89,10 +105,10 @@ function App() {
           <div className={`chat-app ${sidebarOpen ? 'shifted' : ''}`}>
             <div className="chat-header">
               <div className="menu-icon" onClick={toggleSidebar}>
-                &#9776; {/* Unicode for the menu icon */}
+                &#9776;
               </div>
-              <img src="profile-pic.png" alt="Profile" className="profile-pic" />
-              <div className="chat-title">Chat Title</div>
+              <img src={profileImage} alt="Profile" className="profile-pic" />
+              <div className="chat-title">{chatTitle}</div>
             </div>
 
             <div className="chat-window" ref={chatWindowRef}>
@@ -112,14 +128,16 @@ function App() {
                 placeholder="Type a message..."
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               />
               <button onClick={sendMessage}>Send</button>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
 }
+
 
 export default App;
