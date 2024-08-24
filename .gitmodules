@@ -1,0 +1,3 @@
+[submodule "petq-chat-rs"]
+	path = petq-chat-rs
+	url = https://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@github.com/NewBornRustacean/petq-chat-rs.git
