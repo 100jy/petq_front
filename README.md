@@ -22,6 +22,7 @@
     
     # 필수 depen 설치 
     npm install
+    npm install @react-oauth/google
 
     # app 실행
     npm start
