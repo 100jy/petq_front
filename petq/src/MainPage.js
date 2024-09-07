@@ -1,35 +1,73 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './MainPage.css'; // Make sure this CSS file includes all styles mentioned below
-import defaultProfilePic from './assets/defaultProfilePic.png'; // Path to your default profile image
+import './MainPage.css';
+import defaultProfilePic from './assets/defaultProfilePic.png';
 
 function MainPage() {
     const [chatMessages, setChatMessages] = useState([]);
     const [userInput, setUserInput] = useState('');
-    // defalt true
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [chatStarted, setChatStarted] = useState(false);
     const [petName, setPetName] = useState('');
     const [petAge, setPetAge] = useState('');
-    const [chatTitle, setChatTitle] = useState('Pet Chat'); // Default chat title
-    const [profileImage, setProfileImage] = useState(defaultProfilePic); // Default profile image
+    const [chatTitle, setChatTitle] = useState('Pet Chat');
+    const [profileImage, setProfileImage] = useState(defaultProfilePic);
     const chatWindowRef = useRef(null);
+
+    // Replace with real UUIDs for your user and chat
+    const userId = '550e8400-e29b-41d4-a716-446655440000';
+    const chatId = '550e8400-e29b-41d4-a716-446655440000';
 
     const sendMessage = () => {
         if (userInput.trim() === '') return;
 
-        setChatMessages((prevMessages) => [
-            ...prevMessages,
-            { text: userInput, type: 'user-message', timestamp: new Date() },
-        ]);
+        const userMessage = { text: userInput, type: 'user-message', timestamp: new Date() };
+        setChatMessages((prevMessages) => [...prevMessages, userMessage]);
 
-        setTimeout(() => {
-            setChatMessages((prevMessages) => [
-                ...prevMessages,
-                { text: `Echo: ${userInput}`, type: 'bot-message', timestamp: new Date() },
-            ]);
-        }, 1000);
-
+        // Clear input field and start receiving the chatbot response
         setUserInput('');
+        fetchChatbotResponse(userMessage.text);
+    };
+
+    const fetchChatbotResponse = (message) => {
+        const encodedPrompt = encodeURIComponent(message);
+        const url = `http://localhost:3000/chat-stream/${userId}/${chatId}?prompt=${encodedPrompt}`;
+
+        const eventSource = new EventSource(url);
+
+        let botMessage = { text: '', type: 'bot-message', timestamp: new Date() };
+
+        eventSource.onmessage = (event) => {
+            console.log('Received:', event.data);  // Debugging: Log each data chunk received
+
+            // Append each token to the bot message text
+            botMessage.text += event.data;
+            setChatMessages((prevMessages) => {
+                // Replace the last bot message with the updated one
+                const updatedMessages = [...prevMessages];
+                if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].type === 'bot-message') {
+                    updatedMessages[updatedMessages.length - 1] = botMessage;
+                } else {
+                    updatedMessages.push(botMessage);
+                }
+                return updatedMessages;
+            });
+        };
+
+        eventSource.onerror = (error) => {
+            console.error('Error in SSE:', error);
+            eventSource.close();
+        };
+
+        eventSource.onopen = () => {
+            console.log('SSE connection opened');
+            // Append the initial empty bot message when connection opens
+            setChatMessages((prevMessages) => [...prevMessages, botMessage]);
+        };
+
+        eventSource.onclose = () => {
+            console.log('SSE connection closed');
+            eventSource.close();
+        };
     };
 
     useEffect(() => {
