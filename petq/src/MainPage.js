@@ -14,7 +14,7 @@ function MainPage() {
     const chatWindowRef = useRef(null);
 
     // Replace with real UUIDs for your user and chat
-    const userId = '550e8400-e29b-41d4-a716-446655440000';
+    const userId = '67e55044-10b1-426f-9247-bb680e5fe0c8';
     const chatId = '550e8400-e29b-41d4-a716-446655440000';
 
     const sendMessage = () => {
