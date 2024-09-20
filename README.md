@@ -10,9 +10,13 @@
         node -v
         npm -v
         ```
+2. chat-stream module update
+```
+cd petq_front
+git submodule update --remote # update submodules
+```
 
-
-2. app 실행
+3. app 실행
     ```bash
     # repo clone
     git clone https://github.com/100jy/petq_front.git
